@@ -1,0 +1,9 @@
+repositories {
+    mavenCentral()
+}
+
+apply plugin: 'java'
+
+dependencies {
+    compile 'org.ow2.asm:asm-all:5.2'
+}

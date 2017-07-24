@@ -1,0 +1,29 @@
+group 'net.sjrx.gradle.plugins'
+version '0.1-SNAPSHOT'
+
+apply plugin: 'java'
+sourceCompatibility = 1.8
+
+apply plugin: net.sjrx.gradle.plugins.tango.TangoSPIPlugin
+
+repositories {
+    mavenCentral()
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        //compile group: 'org.apache.bcel', name: 'bcel', version: '6.0'
+    }
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+generateSPIMappingFiles {
+    interfaces = ['net.sjrx.gradle.plugins.tango.example.auto.AutoSPIInterface']
+}
