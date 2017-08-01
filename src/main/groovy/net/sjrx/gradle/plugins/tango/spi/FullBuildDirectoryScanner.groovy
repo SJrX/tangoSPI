@@ -2,8 +2,6 @@ package net.sjrx.gradle.plugins.tango.spi
 
 import org.objectweb.asm.ClassReader
 
-import java.nio.file.Files
-
 /**
  * Created by sjr on 7/23/17.
  */

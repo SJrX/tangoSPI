@@ -1,12 +1,12 @@
 package net.sjrx.gradle.plugins.tango
 
 import org.gradle.api.GradleException
-import org.gradle.api.Plugin;
+import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.plugins.PluginCollection
 import org.slf4j.Logger
-import org.slf4j.LoggerFactory;
+import org.slf4j.LoggerFactory
 
 /**
  * Created by sjr on 7/23/17.

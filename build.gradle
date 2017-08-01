@@ -1,29 +1,44 @@
+apply plugin: 'java'
+apply plugin: 'groovy'
+apply plugin: 'maven'
+
+archivesBaseName = 'tangospi-plugin'
 group 'net.sjrx.gradle.plugins'
 version '0.1-SNAPSHOT'
 
-apply plugin: 'java'
-sourceCompatibility = 1.8
-
-apply plugin: net.sjrx.gradle.plugins.tango.TangoSPIPlugin
+sourceCompatibility = 1.7
 
 repositories {
     mavenCentral()
 }
 
-buildscript {
-    repositories {
-        mavenCentral()
-    }
+sourceSets {
+    functionalTests {
+        groovy {
+            compileClasspath += main.output
+            runtimeClasspath += main.output
+        }
 
-    dependencies {
-        //compile group: 'org.apache.bcel', name: 'bcel', version: '6.0'
     }
+}
+
+configurations {
+    functionalTestsCompile.extendsFrom testCompile
+    functionalTestsRuntime.extendsFrom testRuntime
 }
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile localGroovy()
+    compile gradleApi()
+    compile 'org.ow2.asm:asm-all:5.2'
+
+    functionalTestsCompile 'junit:junit:4.12'
 }
 
-generateSPIJava {
-    interfaces = ['net.sjrx.gradle.plugins.tango.example.auto.AutoSPIInterface']
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: "file://$projectDir/mvnRepo")
+        }
+    }
 }
