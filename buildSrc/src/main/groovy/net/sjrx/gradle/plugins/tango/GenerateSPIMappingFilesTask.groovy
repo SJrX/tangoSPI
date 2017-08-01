@@ -38,15 +38,14 @@ class GenerateSPIMappingFilesTask extends DefaultTask {
 
         project.getPlugins().withType(JavaPlugin.class).each {
 
-
-
-
             log.debug("Generating SPI Mappings for Java code")
 
             // Adapted from: https://discuss.gradle.org/t/how-do-i-add-directories-to-the-main-resources-sourceset-in-a-gradle-plugin/5953/3
 
             SourceSetContainer sourceSets = (SourceSetContainer) project.getProperties().get("sourceSets")
             sourceSets.each {
+
+
 
                 log.debug("Scanning for implementations of $interfacesToGenerateMapping in Source Set ${it.name} and directory ${it.allJava}")
 

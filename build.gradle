@@ -24,6 +24,6 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
-generateSPIMappingFiles {
+generateSPIJava {
     interfaces = ['net.sjrx.gradle.plugins.tango.example.auto.AutoSPIInterface']
 }
