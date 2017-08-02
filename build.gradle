@@ -1,12 +1,36 @@
+/**
+ * Used to assist with functional tests of plugin (but also may auto-generate stuff)
+ *
+ * Source: https://docs.gradle.org/3.3/userguide/javaGradle_plugin.html
+ */
+plugins {
+    id "java-gradle-plugin"
+}
+
+gradlePlugin {
+    plugins {
+        tangoSpi {
+            id = "net.sjrx.tangospi"
+            implementationClass = "net.sjrx.gradle.plugins.tango.TangoSPIPlugin"
+        }
+    }
+}
+
 apply plugin: 'java'
 apply plugin: 'groovy'
 apply plugin: 'maven'
 
+/**
+ * Controls maven publication information
+ *
+ * Source: (TBD)
+ */
 archivesBaseName = 'tangospi-plugin'
 group 'net.sjrx.gradle.plugins'
 version '0.1-SNAPSHOT'
 
 sourceCompatibility = 1.7
+
 
 repositories {
     mavenCentral()
@@ -37,12 +61,23 @@ dependencies {
     // TODO figure out why localGroovy() tanks
     compile 'org.codehaus.groovy:groovy-all:2.4.7'
     compile gradleApi()
-    compile 'org.ow2.asm:asm-all:5.2'
 
+    compile 'org.ow2.asm:asm-all:5.2' // Plugin used for byte code analysis
+
+    testCompile 'junit:junit:4.12'
     functionalTestsCompile 'junit:junit:4.12'
-    functionalTestsCompile gradleTestKit()
+    functionalTestsCompile gradleTestKit() // Used for functional test fixture creation
+
     functionalTestsCompile 'org.spockframework:spock-core:1.1-groovy-2.4'
 }
+
+task functionalTest(type: Test) {
+    testClassesDir = sourceSets.functionalTests.output.classesDir
+    classpath = sourceSets.functionalTests.runtimeClasspath
+}
+
+check.dependsOn functionalTest
+
 
 uploadArchives {
     repositories {
