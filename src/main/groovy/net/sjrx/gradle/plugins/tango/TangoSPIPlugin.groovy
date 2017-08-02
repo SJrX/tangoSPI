@@ -23,25 +23,27 @@ class TangoSPIPlugin implements Plugin<Project> {
     @Override
     public void apply(Project project) {
 
-        PluginCollection<JavaPlugin> javaPlugins = project.getPlugins().withType(JavaPlugin)
+        project.afterEvaluate {
+            PluginCollection<JavaPlugin> javaPlugins = project.getPlugins().withType(JavaPlugin)
 
-        switch (javaPlugins.size()) {
-            case 0:
-                throw new GradleException("The Tango SPI Plugin requires the java plugin to be applied to this project")
+            switch (javaPlugins.size()) {
+                case 0:
+                    throw new GradleException("The Tango SPI Plugin requires the java plugin to be applied to this project")
 
-            case 1:
-                project.extensions.create(TASK_NAME, TangoSPIPluginExtension)
-                def newTask = project.task(TASK_NAME, type: GenerateSPIMappingFilesTask)
-                project.getTasksByName(CLASSES_JAVA_TASK_NAME, false).head().dependsOn.add(newTask);
+                case 1:
+                    project.extensions.create(TASK_NAME, TangoSPIPluginExtension)
+                    def newTask = project.task(TASK_NAME, type: GenerateSPIMappingFilesTask)
+                    project.getTasksByName(CLASSES_JAVA_TASK_NAME, false).head().dependsOn.add(newTask);
 
-                log.debug("Added dependency on " + " task to task: " + CLASSES_JAVA_TASK_NAME + " which enables automagically generate SPI mapping files for interfaces")
+                    log.debug("Added dependency on " + " task to task: " + CLASSES_JAVA_TASK_NAME + " which enables automagically generate SPI mapping files for interfaces")
 
-                break;
+                    break;
 
-            default:
-                throw new IllegalStateException("The Tango SPI Plugin does not know how to handle when there is more than one JavaPlugin applied. Please report this to the developer if this happens, as they didn't think it could ever happen but that was incorrect. The size reported by the number of plugins is ${javaPlugins.size}");
+                default:
+                    throw new IllegalStateException("The Tango SPI Plugin does not know how to handle when there is more than one JavaPlugin applied. Please report this to the developer if this happens, as they didn't think it could ever happen but that was incorrect. The size reported by the number of plugins is ${javaPlugins.size}");
 
 
+            }
         }
     }
 }

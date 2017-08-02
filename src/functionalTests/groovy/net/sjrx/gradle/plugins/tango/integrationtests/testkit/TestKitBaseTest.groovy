@@ -1,9 +1,6 @@
 package net.sjrx.gradle.plugins.tango.integrationtests.testkit
 
-import org.gradle.testkit.runner.GradleRunner
-
-import static org.gradle.testkit.runner.TaskOutcome.*
-
+import net.sjrx.gradle.plugins.tango.integrationtests.fixtures.GradleProjectBuilder
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
@@ -18,38 +15,42 @@ class TestKitBaseTest extends Specification {
         buildFile = testProjectDir.newFile('build.gradle')
     }
 
-    def "hello world task prints hello world"() {
+    GradleProjectBuilder emptyBuilder() {
+        return GradleProjectBuilder.empty().withTempDirectory(testProjectDir.root)
+    }
+
+
+    def "no java plugin but tango plugin results in build failure"() {
         given:
-        buildFile << """
-    plugins { 
-        id "net.sjrx.tangospi"
-    }
-    
-    task helloWorld { 
-        doLast { 
-            println 'hello world!'
-        }
-    }
-    
-    task showClasspath {
-    doLast {
-        buildscript.configurations.classpath.each { println it.name }
-    }
-}
-"""
+        GradleProjectBuilder builder = emptyBuilder().loadAndApplyTangoPlugin()
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('tasks')
-                .withPluginClasspath()
-                .build()
+        def result = builder.prepareRunner().withArguments("tasks").buildAndFail()
 
         then:
+        result.output.contains("The Tango SPI Plugin requires the java plugin to be applied to this project")
+    }
 
-        //result.output.eachLine( { println ">>$it" })
-        result.output.contains('tango')
-        result.task(":helloWorld").outcome == SUCCESS
+    def "standard tango plugin loading with java plugin successfully creates task"() {
+        given:
+        GradleProjectBuilder builder = emptyBuilder().loadAndApplyTangoPlugin().applyJava()
+
+        when:
+        def result = builder.prepareRunner().withArguments("tasks", "--all").build()
+
+        then:
+        result.output.contains("generateSPIJava")
+    }
+
+    def "deferred tango plugin load with java plugin successfully creates task"() {
+        given:
+        GradleProjectBuilder builder = emptyBuilder().loadTangoPlugin().applyJava().applyTangoPlugin()
+
+        when:
+        def result = builder.prepareRunner().withArguments("tasks", "--all").build()
+
+        then:
+        result.output.contains("generateSPIJava")
     }
 
 }
