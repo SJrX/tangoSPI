@@ -25,14 +25,23 @@ sourceSets {
 configurations {
     functionalTestsCompile.extendsFrom testCompile
     functionalTestsRuntime.extendsFrom testRuntime
+
+    all {
+        resolutionStrategy {
+            force 'org.codehaus.groovy:groovy-all:2.4.7'
+        }
+    }
 }
 
 dependencies {
-    compile localGroovy()
+    // TODO figure out why localGroovy() tanks
+    compile 'org.codehaus.groovy:groovy-all:2.4.7'
     compile gradleApi()
     compile 'org.ow2.asm:asm-all:5.2'
 
     functionalTestsCompile 'junit:junit:4.12'
+    functionalTestsCompile gradleTestKit()
+    functionalTestsCompile 'org.spockframework:spock-core:1.1-groovy-2.4'
 }
 
 uploadArchives {
