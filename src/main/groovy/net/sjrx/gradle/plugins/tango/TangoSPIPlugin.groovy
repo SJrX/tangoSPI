@@ -13,7 +13,17 @@ import org.slf4j.LoggerFactory
  */
 class TangoSPIPlugin implements Plugin<Project> {
 
-    final String TASK_NAME = "generateSPIJava";
+    /**
+     * Task name comes from
+     */
+    final String TASK_NAME = "generateProviderConfigurationFileJava"
+
+    /**
+     * Gradle Plugin configuration name (i.e., what users will use to configure the plugin
+     */
+    final String PLUGIN_CONFIGURATION_NAME = "tangospi";
+
+    final String TASK_DESCRIPTION = "Generate provider configuration files necessary to allow the java.util.ServiceLoader to locate an implementation"
 
     private static final Logger log = LoggerFactory.getLogger(TangoSPIPlugin.class)
 
@@ -22,6 +32,7 @@ class TangoSPIPlugin implements Plugin<Project> {
 
     @Override
     public void apply(Project project) {
+        project.extensions.create(PLUGIN_CONFIGURATION_NAME, TangoSPIPluginExtension)
 
         project.afterEvaluate {
             PluginCollection<JavaPlugin> javaPlugins = project.getPlugins().withType(JavaPlugin)
@@ -31,8 +42,8 @@ class TangoSPIPlugin implements Plugin<Project> {
                     throw new GradleException("The Tango SPI Plugin requires the java plugin to be applied to this project")
 
                 case 1:
-                    project.extensions.create(TASK_NAME, TangoSPIPluginExtension)
-                    def newTask = project.task(TASK_NAME, type: GenerateSPIMappingFilesTask)
+                    def newTask = project.task(TASK_NAME, type: GenerateSPIMappingFilesTask, description: TASK_DESCRIPTION)
+
                     project.getTasksByName(CLASSES_JAVA_TASK_NAME, false).head().dependsOn.add(newTask);
 
                     log.debug("Added dependency on " + " task to task: " + CLASSES_JAVA_TASK_NAME + " which enables automagically generate SPI mapping files for interfaces")

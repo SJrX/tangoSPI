@@ -1,5 +1,6 @@
 package net.sjrx.gradle.plugins.tango.integrationtests.fixtures
 
+import groovy.transform.CompileStatic
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.tooling.model.GradleProject
 
@@ -8,6 +9,7 @@ import org.gradle.tooling.model.GradleProject
  *
  * TODO Evaluate if this can be ported to Native Groovy Builders, when familiar with them.
  */
+@CompileStatic
 class GradleProjectBuilder {
 
     private String gradleFile = ""
@@ -15,6 +17,8 @@ class GradleProjectBuilder {
     private File buildDirectoryRoot = null;
 
     boolean nonPluginApplied = false
+
+    private List<String> interfacesToSearch = new ArrayList<>();
 
     /**
      * Force Private Constructor, use static builder methods.
@@ -88,5 +92,24 @@ class GradleProjectBuilder {
         this.buildDirectoryRoot = buildDirectoryRoot
 
         return this;
+    }
+
+    GradleProjectBuilder addInterfaceToSearch(String interfaceName) {
+        this.interfacesToSearch += interfaceName
+
+        return this;
+    }
+
+    GradleProjectBuilder addTangoConfigurationBlock() {
+        nonPluginApplied = true
+
+        gradleFile += """tangospi {
+interfaces = [${this.interfacesToSearch.collect {"'$it'"}.join(",")}]
+} """
+        return this
+    }
+
+    public String toString() {
+        return "CurrentBuildFile: ${this.gradleFile}\n"
     }
 }
