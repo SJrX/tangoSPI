@@ -8,13 +8,13 @@ import org.objectweb.asm.ClassReader
 class FullBuildDirectoryScanner {
 
 
-    private final Set<String> interfacesToScanFor;
+    private final Set<String> interfacesToScanFor
 
-    private final Map<String, List<String>> foundInterfaces;
+    private final Map<String, List<String>> foundInterfaces
 
-    public FullBuildDirectoryScanner(Set<String> interfacesToScanFor, Set<File> directoriesToScan)
+    FullBuildDirectoryScanner(Set<String> interfacesToScanFor, Set<File> directoriesToScan)
     {
-        this.interfacesToScanFor = interfacesToScanFor;
+        this.interfacesToScanFor = interfacesToScanFor
 
         Map<String, List<String>> foundInterfaces = new HashMap<>()
         interfacesToScanFor.each { foundInterfaces.put(it, new ArrayList<String>()) }
@@ -22,22 +22,22 @@ class FullBuildDirectoryScanner {
         directoriesToScan.each { walk(it, foundInterfaces) }
 
 
-        Map<String, List<String>> unmodifiableValues = new HashMap<>();
+        Map<String, List<String>> unmodifiableValues = new HashMap<>()
         foundInterfaces.each { unmodifiableValues.put(it.key, Collections.unmodifiableList(foundInterfaces.get(it.key)))}
 
-        this.foundInterfaces = Collections.unmodifiableMap(unmodifiableValues);
+        this.foundInterfaces = Collections.unmodifiableMap(unmodifiableValues)
     }
 
 
     // Adapted/Stolen from: https://stackoverflow.com/questions/2056221/recursively-list-files-in-java
-    public void walk( File root , Map<String, List<String>> foundInterfaces) {
-        File[] list = root.listFiles();
+    void walk( File root , Map<String, List<String>> foundInterfaces) {
+        File[] list = root.listFiles()
 
-        if (list == null) return;
+        if (list == null) return
 
         for ( File f : list ) {
             if ( f.isDirectory() ) {
-                walk( f, foundInterfaces );
+                walk( f, foundInterfaces )
 
             }
             else {
@@ -45,18 +45,18 @@ class FullBuildDirectoryScanner {
                 if (f.name.endsWith(".class"))
                 {
                     ClassReader cr = new ClassReader(new FileInputStream(f))
-                    ClassInterfaceDetector cid = new ClassInterfaceDetector();
-                    cr.accept(cid, ClassReader.SKIP_CODE | ClassReader.SKIP_FRAMES | ClassReader.SKIP_DEBUG );
+                    ClassInterfaceDetector cid = new ClassInterfaceDetector()
+                    cr.accept(cid, ClassReader.SKIP_CODE | ClassReader.SKIP_FRAMES | ClassReader.SKIP_DEBUG )
 
-                    Set<String> matchedInterfaces = new HashSet<>(cid.getInterfaces());
-                    matchedInterfaces.retainAll(this.interfacesToScanFor);
+                    Set<String> matchedInterfaces = new HashSet<>(cid.getInterfaces())
+                    matchedInterfaces.retainAll(this.interfacesToScanFor)
                     matchedInterfaces.each {foundInterfaces.get(it).add(cid.getName())}
                 }
             }
         }
     }
 
-    public Map<String, List<String>> getInterfaceToImplementationsMapping() {
+    Map<String, List<String>> getInterfaceToImplementationsMapping() {
         return this.foundInterfaces
     }
 
