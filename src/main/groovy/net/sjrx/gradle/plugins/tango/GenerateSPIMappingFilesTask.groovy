@@ -2,6 +2,7 @@ package net.sjrx.gradle.plugins.tango
 
 import net.sjrx.gradle.plugins.tango.spi.FullBuildDirectoryScanner
 import org.gradle.api.DefaultTask
+import org.gradle.api.InvalidUserDataException
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskAction
@@ -45,7 +46,22 @@ class GenerateSPIMappingFilesTask extends DefaultTask {
             SourceSetContainer sourceSets = (SourceSetContainer) project.getProperties().get("sourceSets")
             sourceSets.each {
 
+                log.debug("Searching for conflicting manually generated resource files")
 
+                List<String> conflictingFilenames = interfacesToGenerateMapping.collect { interfaceName -> "META-INF/services/$interfaceName"}
+
+                it.resources.each { resourceFile ->
+                        log.debug("Checking for conflict with $resourceFile")
+
+                        conflictingFilenames.each { conflictingFile ->
+                            if(resourceFile.absolutePath.endsWith(conflictingFile))
+                            {
+                                throw new InvalidUserDataException("Cannot auto-generate $conflictingFile as it seems to already exist in the source set. Please delete this file from the source set, or remove it from the configuration of the tangospi plugin");
+                            }
+
+                        }
+
+                }
 
                 log.debug("Scanning for implementations of $interfacesToGenerateMapping in Source Set ${it.name} and directory ${it.allJava}")
 
