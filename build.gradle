@@ -6,12 +6,16 @@
 plugins {
     id "java-gradle-plugin"
     id "jacoco"
+    id "com.gradle.plugin-publish" version "0.9.7"
 }
+
+project.ext.pluginId = "net.sjrx.tangospi"
+project.ext.pluginName = "Tango SPI"
 
 gradlePlugin {
     plugins {
         tangoSpi {
-            id = "net.sjrx.tangospi"
+            id = project.pluginId
             implementationClass = "net.sjrx.gradle.plugins.tango.TangoSPIPlugin"
         }
     }
@@ -28,13 +32,27 @@ apply plugin: 'codenarc'
  */
 archivesBaseName = 'tangospi-plugin'
 group 'net.sjrx.gradle.plugins'
-version '0.1-SNAPSHOT'
+version '0.1'
+
+pluginBundle {
+    website = 'https://github.com/SJrX/tangoSPI/'
+    vcsUrl = 'https://github.com/SJrX/tangoSPI/'
+    description = 'A plugin that allows auto-generating provider configuration files necessary to use Java Service Provider Interface functionality'
+    tags = ['spi', 'serviceproviderinterface', 'providerconfigurationfile']
+
+    plugins {
+        greetingsPlugin {
+            id = project.pluginId
+            displayName = project.pluginName
+        }
+    }
+}
 
 sourceCompatibility = 1.7
 
 
 repositories {
-    mavenCentral()
+    jcenter()
 }
 
 sourceSets {
