@@ -121,8 +121,11 @@ class GenerateProviderConfigurationFileTask extends DefaultTask {
      * @param servicesDirectory
      */
     protected void scanForImplementationsAndWriteProviderConfigurationFile(SourceSet sourceSet, File servicesDirectory, Set<String> interfacesToGenerateMapping) {
-        log.debug("Scanning for implementations of $interfacesToGenerateMapping in source set ${sourceSet.name} and directories: ${sourceSet.allJava.srcDirs} via $sourceSet.output.classesDir")
-        FullBuildDirectoryScanner fbds = new FullBuildDirectoryScanner(interfacesToGenerateMapping, Collections.singleton(sourceSet.output.classesDir))
+
+        Set<File> sourceDirectories = SourceSetOutputHelper.getClassesDirs(sourceSet.output)
+        log.debug("Scanning for implementations of $interfacesToGenerateMapping in source set ${sourceSet.name} and directories: ${sourceSet.allJava.srcDirs} via $sourceDirectories")
+
+        FullBuildDirectoryScanner fbds = new FullBuildDirectoryScanner(interfacesToGenerateMapping, sourceDirectories)
 
 
         fbds.interfaceToImplementationsMapping.each { interfaceToImplMapping ->

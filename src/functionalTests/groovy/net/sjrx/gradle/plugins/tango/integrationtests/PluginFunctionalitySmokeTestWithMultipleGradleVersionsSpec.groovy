@@ -5,12 +5,12 @@ import spock.lang.Unroll
 
 class PluginFunctionalitySmokeTestWithMultipleGradleVersionsSpec extends AbstractBaseSpec {
 
-    static List<String> supportedGradleVersions = ["3.0","3.1", "3.2", "3.2.1", "3.3", "3.4", "3.4.1", "3.5", "3.5.1", /* "4.0", "4.0.1", "4.0.2"*/].sort()
+    static List<String> supportedGradleVersions = ["3.0","3.1", "3.2", "3.2.1", "3.3", "3.4", "3.4.1", "3.5", "3.5.1", "4.0" , "4.0.1", "4.0.2"].sort()
 
     @Unroll
     def "Smoke test that generated meta data for Groovy, Scala, and Java implementations in both regular and tests works with Gradle #version"() {
         given:
-        GradleProjectBuilder builder = emptyGradleBuildFile().loadAndApplyTangoPlugin().applyJava().applyGroovy().applyScala()
+        GradleProjectBuilder builder = emptyGradleBuildFile().gradleVersion(version).loadAndApplyTangoPlugin().applyJava().applyGroovy().applyScala()
                 .addJavaInterfaceToSource(SPI_INTERFACE_CLASSNAME)
                 .addGroovyImplementationOfInterfaceToSource(SPI_INTERFACE_IMPLEMENTATION_CLASSNAME_PREFIX + 1, SPI_INTERFACE_CLASSNAME)
                 .addScalaImplementationOfInterfaceToSource(SPI_INTERFACE_IMPLEMENTATION_CLASSNAME_PREFIX + 2, SPI_INTERFACE_CLASSNAME)
@@ -23,7 +23,7 @@ class PluginFunctionalitySmokeTestWithMultipleGradleVersionsSpec extends Abstrac
                 .enableValidationRunTaskForInterface(SPI_INTERFACE_CLASSNAME)
 
         when:
-        def result = builder.prepareRunner().withGradleVersion(version).withArguments(":run").build()
+        def result = builder.prepareRunner().withArguments(":run").build()
 
         then:
         numberOfLoadedInterfacesMatchesExpectedInBuildResult(result, SPI_INTERFACE_CLASSNAME, 6)

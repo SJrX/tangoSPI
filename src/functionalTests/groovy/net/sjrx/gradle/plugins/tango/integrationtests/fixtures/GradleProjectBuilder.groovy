@@ -51,6 +51,11 @@ class GradleProjectBuilder {
     private Set<String> dependencies = new TreeSet<>()
 
     /**
+     * Controls which gradle version we will use
+     */
+    private String gradleVersion = "3.3"
+
+    /**
      * Force Private Constructor, use static builder methods.
      */
     private GradleProjectBuilder()
@@ -201,7 +206,7 @@ class GradleProjectBuilder {
 
         passThruJavaAgent(r)
 
-        return r.withPluginClasspath().withProjectDir(buildDirectoryRoot)
+        return r.withPluginClasspath().withGradleVersion(gradleVersion).withProjectDir(buildDirectoryRoot)
 
     }
 
@@ -348,6 +353,40 @@ public static void main(String[] args) {
 """)
     }
 
+    /**
+     * Sets the gradle version that we will build the runner with
+     *
+     * @param version
+     */
+    GradleProjectBuilder gradleVersion(String version) {
+        this.gradleVersion = version
+
+        return this
+    }
+
+    /**
+     * Prints the gradle version that we are using to standard output.
+     *
+     * This can be used to validate the output
+     *
+     *
+     * @return
+     */
+    GradleProjectBuilder printGradleVersionOnStartUp() {
+        nonPluginApplied = true
+        this.gradleFile += """
+
+    println "Running gradle version: \$gradle.gradleVersion"
+
+"""
+
+        return this
+    }
+
+    /**
+     * Prints the current build file
+     * @return
+     */
     String toString() {
         return "CurrentBuildFile: ${this.renderGradleFile()}\n"
     }
