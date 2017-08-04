@@ -3,6 +3,9 @@ package net.sjrx.gradle.plugins.tango.spi
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.Opcodes
 
+/**
+ * Visitor implementation that determines all interfaces implemented by a class
+ */
 class ClassInterfaceDetector extends ClassVisitor {
 
     private Set<String> interfaces = new HashSet<String>()

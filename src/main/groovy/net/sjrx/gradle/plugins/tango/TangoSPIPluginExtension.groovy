@@ -1,7 +1,7 @@
 package net.sjrx.gradle.plugins.tango
 
 /**
- * Created by sjr on 7/23/17.
+ * Options for the plugin
  */
 class TangoSPIPluginExtension {
 

@@ -5,6 +5,7 @@
  */
 plugins {
     id "java-gradle-plugin"
+    id "jacoco"
 }
 
 gradlePlugin {
@@ -18,7 +19,7 @@ gradlePlugin {
 
 apply plugin: 'java'
 apply plugin: 'groovy'
-apply plugin: 'maven'
+apply plugin: 'codenarc'
 
 /**
  * Controls maven publication information
@@ -63,6 +64,7 @@ dependencies {
     compile gradleApi()
 
     compile 'org.ow2.asm:asm-all:5.2' // Plugin used for byte code analysis
+    compile 'net.jcip:jcip-annotations:1.0' // Annotations for documentation only
 
     testCompile 'junit:junit:4.12'
     functionalTestsCompile 'junit:junit:4.12'
@@ -76,13 +78,49 @@ task functionalTest(type: Test) {
     classpath = sourceSets.functionalTests.runtimeClasspath
 }
 
-check.dependsOn functionalTest
+jacoco {
+    toolVersion = "0.7.9"
+}
 
-
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            repository(url: "file://$projectDir/mvnRepo")
-        }
+jacocoTestReport {
+    reports {
+        xml.enabled = true
+        html.enabled = true
     }
 }
+
+task functionalTestCoverageReport(type: JacocoReport) {
+    sourceSets sourceSets.main
+    executionData functionalTest
+}
+
+/**
+ * Code Narc settings
+ */
+project.ext.maxViolations = 1000 // TODO lower this number after we are past MVP.
+codenarcMain {
+    configFile file("$rootDir/config/codenarc/codenarc.groovy")
+
+    maxPriority1Violations maxViolations
+    maxPriority2Violations maxViolations
+    maxPriority3Violations maxViolations
+}
+
+codenarcTest {
+    configFile file("$rootDir/config/codenarc/codenarc.groovy")
+
+    maxPriority1Violations maxViolations
+    maxPriority2Violations maxViolations
+    maxPriority3Violations maxViolations
+}
+
+codenarcFunctionalTests {
+    configFile file("$rootDir/config/codenarc/codenarc.groovy")
+
+    maxPriority1Violations maxViolations
+    maxPriority2Violations maxViolations
+    maxPriority3Violations maxViolations
+}
+
+test.dependsOn functionalTest
+check.dependsOn functionalTestCoverageReport

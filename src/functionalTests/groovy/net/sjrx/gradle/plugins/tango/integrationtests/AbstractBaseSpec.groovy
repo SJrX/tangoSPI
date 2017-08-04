@@ -8,9 +8,12 @@ import spock.lang.Specification
 
 import java.util.regex.Pattern
 
-import static org.gradle.testkit.runner.TaskOutcome.*
+import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 
 
+/**
+ * Abstract test case with some helper methods, and shared setup
+ */
 abstract class AbstractBaseSpec extends Specification {
 
     /**
@@ -49,7 +52,6 @@ abstract class AbstractBaseSpec extends Specification {
             assert result.task(":run").outcome == SUCCESS
         } else if(result.task(":runTest") != null)
         {
-            println result.output
             assert result.task(":runTest").outcome == SUCCESS
         } else {
             throw new IllegalStateException("One of run or runTest targets must run in order for this helper method to be valid")
@@ -61,14 +63,6 @@ abstract class AbstractBaseSpec extends Specification {
         {
             int foundMatches = Integer.valueOf(matcher.group('count'))
 
-            if(expectedMatches != foundMatches)
-            {
-                System.err.println("ERROR ABOUT TO FAIL")
-                System.err.println(result.output)
-                System.err.println(result.getProperties())
-                System.err.println(testProjectDir.root)
-                Thread.sleep(50)
-            }
             assert expectedMatches == foundMatches
         } else {
             throw new IllegalStateException("Could not find expected string in output: $result.output with regular expression: ${matcher.pattern().pattern()}")

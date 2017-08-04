@@ -3,7 +3,7 @@ package net.sjrx.gradle.plugins.tango.integrationtests
 import net.sjrx.gradle.plugins.tango.integrationtests.fixtures.GradleProjectBuilder
 import spock.lang.Unroll
 
-class SmokeTestWithMultipleVersions extends AbstractBaseSpec {
+class PluginFunctionalitySmokeTestWithMultipleGradleVersionsSpec extends AbstractBaseSpec {
 
     static List<String> supportedGradleVersions = ["3.0","3.1", "3.2", "3.2.1", "3.3", "3.4", "3.4.1", "3.5", "3.5.1", /* "4.0", "4.0.1", "4.0.2"*/].sort()
 

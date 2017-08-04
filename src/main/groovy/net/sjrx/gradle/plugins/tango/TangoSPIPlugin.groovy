@@ -1,35 +1,42 @@
 package net.sjrx.gradle.plugins.tango
 
-import groovy.transform.PackageScope
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.plugins.PluginCollection
+import org.gradle.api.tasks.SourceSet
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 /**
- * Created by sjr on 7/23/17.
+ * Gradle plugin entry point class
+ *
  */
 class TangoSPIPlugin implements Plugin<Project> {
 
     /**
-     * Task name comes from
+     * Task name that will appear in project
      */
-    final String TASK_NAME = "generateProviderConfigurationFile"
+    final static String TASK_NAME = "generateProviderConfigurationFile"
 
-    final String TEST_TASK_NAME = "generateProviderConfigurationFileTest"
+    final static String TASK_DESCRIPTION = "Generates provider configuration files necessary to allow the java.util.ServiceLoader to locate an implementation in the main source set."
+
+
+    /**
+     * Task name for test source set that will appear in project.
+     */
+    final static String TEST_TASK_NAME = "generateProviderConfigurationFileTest"
+
+    final static String TEST_TASK_DESCRIPTION = "Generates provider configuration files necessary to allow the java.util.ServiceLoader to locate an implementation in the test source set."
+
 
     /**
      * Gradle Plugin configuration name (i.e., what users will use to configure the plugin
      */
-    final String PLUGIN_CONFIGURATION_NAME = "tangospi"
+    final static String PLUGIN_CONFIGURATION_NAME = "tangospi"
 
-    final String TASK_DESCRIPTION = "Generates provider configuration files necessary to allow the java.util.ServiceLoader to locate an implementation in the main source set."
-
-    final String TEST_TASK_DESCRIPTION = "Generates provider configuration files necessary to allow the java.util.ServiceLoader to locate an implementation in the test source set."
 
     private static final Logger log = LoggerFactory.getLogger(TangoSPIPlugin.class)
 
@@ -54,10 +61,9 @@ class TangoSPIPlugin implements Plugin<Project> {
 
     private static final COMPILE_TEST_SCALA_TASK_NAME = "compileTestScala"
 
+    private static final MAIN_SOURCE_SET_NAME = SourceSet.MAIN_SOURCE_SET_NAME
 
-    private static final MAIN_SOURCE_SET_NAME = "main"
-
-    private static final TEST_SOURCE_SET_NAME = "test"
+    private static final TEST_SOURCE_SET_NAME = SourceSet.TEST_SOURCE_SET_NAME
 
     @Override
     void apply(Project project) {
@@ -71,8 +77,9 @@ class TangoSPIPlugin implements Plugin<Project> {
                     throw new GradleException("The Tango SPI Plugin requires the java plugin to be applied to this project")
 
                 case 1:
-                    applyToJavaPlugin(project)
+                    createTaskForMainSourceSet(project)
 
+                    createTaskForTestSourceSet(project)
                     break
 
                 default:
@@ -84,14 +91,20 @@ class TangoSPIPlugin implements Plugin<Project> {
     }
 
     /**
-     * Only exists to get around our usage of afterEvaluate(), which cannot be unit tested:
-     * https://discuss.gradle.org/t/how-to-test-cutom-plugin-with-afterevaluate/5772
+     * Creates a task that will operate on the main source set
+     * @param project
      */
-    @PackageScope
-    void applyToJavaPlugin(Project project) {
-
+    static void createTaskForMainSourceSet(Project project)
+    {
         createTask(project, TASK_NAME, TASK_DESCRIPTION, MAIN_SOURCE_SET_NAME, CLASSES_JAVA_TASK_NAME, COMPILE_JAVA_TASK_NAME, COMPILE_SCALA_TASK_NAME)
+    }
 
+    /**
+     * Creates a task that will operate on the test source set
+     * @param project
+     */
+    static void createTaskForTestSourceSet(Project project)
+    {
         createTask(project, TEST_TASK_NAME, TEST_TASK_DESCRIPTION, TEST_SOURCE_SET_NAME, TEST_CLASSES_JAVA_TASK_NAME, COMPILE_TEST_JAVA_TASK_NAME, COMPILE_TEST_SCALA_TASK_NAME)
     }
 

@@ -1,19 +1,28 @@
 package net.sjrx.gradle.plugins.tango.spi
 
+import net.jcip.annotations.Immutable
 import org.objectweb.asm.ClassReader
 
 /**
- * Created by sjr on 7/23/17.
+ * Generates a mapping of all classes which implement the interfaces, in the supplied directories.
  */
+@Immutable
 class FullBuildDirectoryScanner {
 
-
+    /**
+     * The name of the interfaces to search for implementations of
+     */
     private final Set<String> interfacesToScanFor
 
+    /**
+     * The result of the search
+     */
     private final Map<String, List<String>> foundInterfaces
+
 
     FullBuildDirectoryScanner(Set<String> interfacesToScanFor, Set<File> directoriesToScan)
     {
+        // Do search in constructor so that we can have immutable object
         this.interfacesToScanFor = interfacesToScanFor
 
         Map<String, List<String>> foundInterfaces = new HashMap<>()
@@ -28,9 +37,15 @@ class FullBuildDirectoryScanner {
         this.foundInterfaces = Collections.unmodifiableMap(unmodifiableValues)
     }
 
+    /**
+     * @return result of the search
+     */
+    Map<String, List<String>> getInterfaceToImplementationsMapping() {
+        return this.foundInterfaces
+    }
 
     // Adapted/Stolen from: https://stackoverflow.com/questions/2056221/recursively-list-files-in-java
-    void walk( File root , Map<String, List<String>> foundInterfaces) {
+    private void walk( File root , Map<String, List<String>> foundInterfaces) {
         File[] list = root.listFiles()
 
         if (list == null) return
@@ -55,10 +70,5 @@ class FullBuildDirectoryScanner {
             }
         }
     }
-
-    Map<String, List<String>> getInterfaceToImplementationsMapping() {
-        return this.foundInterfaces
-    }
-
 
 }

@@ -2,25 +2,52 @@ package net.sjrx.gradle.plugins.tango.integrationtests.fixtures
 
 import groovy.transform.CompileStatic
 import org.gradle.testkit.runner.GradleRunner
-import org.gradle.tooling.model.internal.outcomes.GradleFileBuildOutcome
+import org.gradle.testkit.runner.internal.DefaultGradleRunner
+
+import java.lang.management.ManagementFactory
 
 /**
- * Helper class for generating a Gradle File Builder for Test Purposes
+ * Builder class that abstracts details for building projects and source files for testing purposes.
  *
- * TODO Evaluate if this can be ported to Native Groovy Builders, when familiar with them.
+ * For the most part methods in this class are applied in sequence to the gradleFile, so if you inverse two operations the build file will do those operations in that order.
+ *
+ * Unfortunately the API is somewhat inconsistent at present, as the following methods have deferred effects:
+ *  1) Adding interfaces for tango to search for, will not be processed until you apply the tango configuration.
+ *  2) Adding dependencies to the build file, will not be processed until the build.gradle file is rendered.
+ *  3) Adding repositories to the build file, will not be processed until the build.gradle file is rendered.
+ *
  */
 @CompileStatic
 class GradleProjectBuilder {
 
+    /**
+     * Accumulates the gradle file that we are building.
+     */
     private String gradleFile = ""
 
+    /**
+     * Root directory of project (build file and other resources will be created within this directory)
+     */
     private File buildDirectoryRoot = null
 
+    /**
+     * Flag variable that keeps track of whether we have done anything other than apply a plugin.
+     */
     boolean nonPluginApplied = false
 
+    /**
+     * Interfaces that we expect the plugin to search for
+     */
     private List<String> interfacesToSearch = new ArrayList<>()
 
+    /**
+     * Repositories we need added to the build file
+     */
     private Set<String> repositories = new TreeSet<>()
+
+    /**
+     * Dependencies we need added to the build file.
+     */
     private Set<String> dependencies = new TreeSet<>()
 
     /**
@@ -35,7 +62,7 @@ class GradleProjectBuilder {
      * Adds the following to the gradle build file, which has the effect of loading the plugin.
      *
      * plugins {
-     *     id "net.sjrx.tangospi
+     *     id "net.sjrx.tangospi"
      * }
      * @return this
      */
@@ -157,7 +184,8 @@ class GradleProjectBuilder {
         this.dependencies.add("$type '$dep'".toString())
         return this
     }
-/**
+
+    /**
      * Writes the built up gradle file and then returns a GradleRunner ready to execute against this build file.
      *
      * @return
@@ -169,9 +197,15 @@ class GradleProjectBuilder {
 
         new File(buildDirectoryRoot.getAbsolutePath() + "/build.gradle").write(renderedGradleFile, "UTF-8")
 
-        return GradleRunner.create().withPluginClasspath().withProjectDir(buildDirectoryRoot)
+        GradleRunner r = GradleRunner.create()
+
+        passThruJavaAgent(r)
+
+        return r.withPluginClasspath().withProjectDir(buildDirectoryRoot)
 
     }
+
+
 
     /**
      * Returns a GradleProjectBuilder that represents an entirely empty build file.
@@ -246,12 +280,20 @@ interfaces = [${this.interfacesToSearch.collect {"'$it'"}.join(",")}]
     }
 
     /**
-     * Adds a run task that will output everything
+     * Adds some functionality to the gradle build that creates two new tasks, run and runTest, which when run outputs information about service loading for the requestedInterfaceNames
      *
+     * The primary use of this functionality is to do end-to-end testing of the plugin. This actually uses the service loader to verify that they _can_ be loaded which is more confidence
+     * inducing than simply manually validating files on disk.
      *
+     * The output of the process is two things which can be scraped and tested against:
+     *
+     * SPI Implementation: <InterfaceName> ==> <ImplementationCanonicalClassName>
+     * SPI Count: <InterfaceName> ==> <count>
+     *
+     * @param requestedInterfaceNames - each one of these will have information printed.
      * @return
      */
-    GradleProjectBuilder enableValidationRunTaskForInterface(String... requestedInterfaceName) {
+    GradleProjectBuilder enableValidationRunTaskForInterface(String... requestedInterfaceNames) {
 
         JavaStructureInfo info = new JavaStructureInfo("net.sjrx.fixtures.executor.ServiceLoaderTestExecutor")
 
@@ -274,7 +316,7 @@ task runTest(type: JavaExec) {
 
 """
 
-        String requestedInterfacesAsJavaArray = requestedInterfaceName.collect{String.valueOf(it) + ".class" }.join(",")
+        String requestedInterfacesAsJavaArray = requestedInterfaceNames.collect{String.valueOf(it) + ".class" }.join(",")
 
         return writeSourceOfJavaStructureToFile(info, """
 package $info.packageName;
@@ -448,10 +490,27 @@ class $classInfo.simpleName implements $interfaceInfo.simpleName
 
     private static void mkdirIfNotExist(String directoryName) {
         if (!new File(directoryName).mkdirs() && !(new File(directoryName).exists())) {
-            System.err.println("Could not create $directoryName")
-
             throw new IllegalStateException("Couldn't create directory $directoryName")
+        }
+    }
 
+    /**
+     * Passes through any java agent arguments we may have received to the subtask
+     *
+     * See: https://discuss.gradle.org/t/gradle-plugins-integration-tests-code-coverage-with-jacoco-plugin/12403
+     *
+     * @param r
+     */
+    private static void passThruJavaAgent(GradleRunner r) {
+        List<String> jvmArguments = new ArrayList<>()
+        for (String s : ManagementFactory.getRuntimeMXBean().getInputArguments()) {
+            if (s.startsWith("-javaagent") && s.contains("jacoco")) {
+                jvmArguments += s.replaceAll("build/", System.getProperty("user.dir") + "/build/")
+            }
+        }
+
+        if (r instanceof DefaultGradleRunner) {
+            ((DefaultGradleRunner) r).withJvmArguments(jvmArguments)
         }
     }
 
@@ -474,7 +533,7 @@ dependencies {
         return gradleFileToWrite
     }
 
-/**
+    /**
      * Helper class that encapsulates logic for converting a class name into various other strings necessary to auto-generate files
      */
     private static class JavaStructureInfo
