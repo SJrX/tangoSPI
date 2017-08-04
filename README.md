@@ -15,10 +15,10 @@ this allows you to create a plugin system where you can add/remove plugins by ad
 ## Usage
 
 ### Simple Case 
-1. Import the plugin to gradle (Not presently listed on plugin portal due to some outstanding bugs)
+1. Import the plugin to gradle 
 ```groovy
 plugins { 
-    id "net.sjrx.tangospi"
+    id "net.sjrx.tangospi" version "0.1"
 }
 ```
 
