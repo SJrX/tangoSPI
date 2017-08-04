@@ -51,4 +51,28 @@ class FixtureSmokeTestSpec extends AbstractBaseSpec {
         then:
         result.task(":classes").outcome == SUCCESS
     }
+
+    def "Running fixture with Gradle 3.1 executes with Gradle 3.1"() {
+        given:
+        GradleProjectBuilder builder = emptyGradleBuildFile().gradleVersion("3.1").printGradleVersionOnStartUp()
+
+        when:
+        def result = builder.prepareRunner().withArguments("tasks").build()
+
+        then:
+        println result.output
+        result.output.contains("Running gradle version: 3.1")
+    }
+
+    def "Running fixture with Gradle 4.0.2 executes with Gradle 4.0.2"() {
+        given:
+        GradleProjectBuilder builder = emptyGradleBuildFile().gradleVersion("4.0.2").printGradleVersionOnStartUp()
+
+        when:
+        def result = builder.prepareRunner().withArguments("tasks").build()
+
+        then:
+        println result.output
+        result.output.contains("Running gradle version: 4.0.2")
+    }
 }
